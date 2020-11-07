@@ -202,6 +202,7 @@ public:
     /// sheet is that which is initially shown by the spreadsheet editor.
     /// </summary>
     worksheet active_sheet();
+    void active_sheet(size_t indx);
 
     /// <summary>
     /// Returns the worksheet with the given name. This may throw an exception

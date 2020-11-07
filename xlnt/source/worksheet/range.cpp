@@ -28,6 +28,10 @@
 #include <xlnt/worksheet/range_iterator.hpp>
 #include <xlnt/worksheet/range_reference.hpp>
 #include <xlnt/worksheet/worksheet.hpp>
+#include <xlnt/worksheet/column_properties.hpp>
+#include <xlnt/worksheet/row_properties.hpp>
+#include <xlnt/styles/fill.hpp>
+
 
 namespace xlnt {
 
@@ -132,6 +136,29 @@ const cell_vector range::vector(std::size_t vector_index) const
     return cell_vector(ws_, cursor, ref_, order_, skip_null_, false);
 }
 
+const cell_vector range::vector(const xlnt::horizontal_alignment dir) const
+{
+    auto cursor = ref_.top_left();
+    if (dir == xlnt::horizontal_alignment::left) {     
+        cursor.column_index(cursor.column_index());
+    } else if (dir == xlnt::horizontal_alignment::right) {     
+        cursor.column_index(cursor.column_index() + (ref_.bottom_right().column() - ref_.top_left().column()).index);
+    }
+    
+    return cell_vector(ws_, cursor, ref_, major_order::column, skip_null_, false);
+}
+const cell_vector range::vector(const xlnt::vertical_alignment dir) const
+{
+    auto cursor = ref_.top_left();
+    if (dir == xlnt::vertical_alignment::top) {
+        ;
+    } else if (dir == xlnt::vertical_alignment::bottom) {
+        cursor.row(cursor.row() + (ref_.bottom_right().row() - ref_.top_left().row()));
+    }
+    
+    return cell_vector(ws_, cursor, ref_, major_order::row, skip_null_, false);
+}
+
 bool range::contains(const cell_reference &ref)
 {
     return ref_.top_left().column_index() <= ref.column_index()
@@ -152,6 +179,49 @@ range range::border(const xlnt::border &new_border)
     return *this;
 }
 
+void range::border_style(const xlnt::horizontal_alignment dir, xlnt::border_style bs)
+{
+    auto cells = vector(dir);
+    for(auto it=cells.begin(); it!=cells.end(); ++it) {
+        auto curBorder = (*it).border();
+
+        if (dir == horizontal_alignment::left) {
+            optional<border::border_property> obp = curBorder.side(border_side::start);
+            border::border_property bp = obp.get();
+            bp.style().set(bs);
+            curBorder.side(border_side::start, bp);
+        } else if (dir == horizontal_alignment::right) {
+            optional<border::border_property> obp = curBorder.side(border_side::end);
+            border::border_property bp = obp.get();
+            bp.style().set(bs);
+            curBorder.side(border_side::end, bp);
+        }
+
+        (*it).border(curBorder);
+    }
+}
+void range::border_style(const xlnt::vertical_alignment dir, xlnt::border_style bs)
+{
+    auto cells = vector(dir);
+    for(auto it=cells.begin(); it!=cells.end(); ++it) {
+        auto curBorder = (*it).border();
+
+        if (dir == vertical_alignment::top) {
+            optional<border::border_property> obp = curBorder.side(border_side::top);
+            border::border_property bp = obp.get();
+            bp.style().set(bs);
+            curBorder.side(border_side::top, bp);
+        } else if (dir == vertical_alignment::bottom) {
+            optional<border::border_property> obp = curBorder.side(border_side::bottom);
+            border::border_property bp = obp.get();
+            bp.style().set(bs);
+            curBorder.side(border_side::bottom, bp);
+        }
+
+        (*it).border(curBorder);
+    }
+}
+
 range range::fill(const xlnt::fill &new_fill)
 {
     apply([&new_fill](class cell c) { c.fill(new_fill); });
@@ -163,6 +233,36 @@ range range::font(const xlnt::font &new_font)
     apply([&new_font](class cell c) { c.font(new_font); });
     return *this;
 }
+range& range::font_size(const double new_font_size)
+{
+    apply([new_font_size](class cell c) { 
+        auto old_font = c.font(); 
+        old_font.size(new_font_size);
+        c.font(old_font); 
+    });
+
+    return *this;
+}
+range& range::color(const double color)
+{
+    apply([color](class cell c) { 
+        xlnt::style s = c.style();
+        xlnt::pattern_fill pf;
+        pf.type(xlnt::pattern_fill_type::none);
+        pf.background(xlnt::color::white());        
+        s.fill(xlnt::fill(pf));
+        c.style(s); 
+    });
+
+    return *this;
+}
+
+range& range::clear_value()
+{
+    apply([](class cell c) { c.clear_value(); });
+    return *this;
+}
+
 
 range range::number_format(const xlnt::number_format &new_number_format)
 {
@@ -318,6 +418,44 @@ range::const_reverse_iterator range::crend() const
 range::const_reverse_iterator range::rend() const
 {
     return crend();
+}
+
+
+void range::column_width(double width)
+{
+	auto curOrder = order();
+	order(xlnt::major_order::column);
+
+    for(std::size_t i=0; i<length(); i++) {
+        if (vector(i).empty()) {
+            break;
+        }
+
+		auto ci = vector(i).front().reference().column_index();
+        column_properties& col_prop = ws_.column_properties(ci);
+		col_prop.width = width;
+        //ws_.add_column_properties(ci, col_prop);
+	}	
+
+	order(curOrder);
+}
+void range::row_height(double h)
+{
+	auto curOrder = order();
+	order(xlnt::major_order::row);
+
+    for(std::size_t i=0; i<length(); i++) {
+        if (vector(i).empty()) {
+            break;
+        }
+
+		auto ci = vector(i).front().reference().row();
+		row_properties& col_prop = ws_.row_properties(ci);
+		col_prop.height = h;
+		//ws_.add_row_properties(ci, col_prop);	
+	}	
+
+	order(curOrder);
 }
 
 } // namespace xlnt

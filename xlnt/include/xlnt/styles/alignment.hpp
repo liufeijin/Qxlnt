@@ -62,6 +62,10 @@ enum class XLNT_API vertical_alignment
 class XLNT_API alignment
 {
 public:
+    alignment() {}
+    alignment(vertical_alignment ali) { vertical(ali); }
+    alignment(horizontal_alignment ali) { horizontal(ali); }
+
     /// <summary>
     /// Returns true if shrink-to-fit has been enabled.
     /// </summary>

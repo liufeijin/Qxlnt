@@ -751,6 +751,15 @@ const cell_vector worksheet::cells(bool skip_null) const
 }
 */
 
+void worksheet::clear_value()
+{    
+    for(auto& it : d_->cell_map_) {        
+        it.second.value_numeric_ = 0;
+        it.second.value_text_.clear();
+        it.second.type_ = cell::type::empty;
+    }    
+}
+
 void worksheet::clear_cell(const cell_reference &ref)
 {
     d_->cell_map_.erase(ref);

@@ -90,6 +90,10 @@ public:
     /// </summary>
     range(const range &) = default;
 
+    major_order order() {    return order_; }
+    void order(major_order order) { order_ = order; }
+
+
     /// <summary>
     /// Erases all cell data from the worksheet for cells within this range.
     /// </summary>
@@ -106,6 +110,11 @@ public:
     /// on major order).
     /// </summary>
     const cell_vector vector(std::size_t n) const;
+
+    // by rao, get cells at boder
+    const cell_vector vector(const xlnt::horizontal_alignment dir) const;
+    const cell_vector vector(const xlnt::vertical_alignment dir) const;
+
 
     /// <summary>
     /// Returns a cell in the range relative to its top left cell.
@@ -148,6 +157,12 @@ public:
     range border(const xlnt::border &new_border);
 
     /// <summary>
+    /// Set boder style for one direction;   by rao
+    /// </summary>
+    void border_style(const xlnt::horizontal_alignment dir, xlnt::border_style bs);
+    void border_style(const xlnt::vertical_alignment dir, xlnt::border_style bs);
+
+    /// <summary>
     /// Sets the fill of all cells in the range to new_fill and returns the range.
     /// </summary>
     range fill(const xlnt::fill &new_fill);
@@ -156,6 +171,13 @@ public:
     /// Sets the font of all cells in the range to new_font and returns the range.
     /// </summary>
     range font(const xlnt::font &new_font);
+
+    // by rao
+    range& font_size(const double new_font_size);    
+    // set fill background color
+    range& color(const double color);
+    // clear content 
+    range& clear_value();
 
     /// <summary>
     /// Sets the number format of all cells in the range to new_number_format and
@@ -289,6 +311,17 @@ public:
     /// Returns true if this range is not equivalent to comparand.
     /// </summary>
     bool operator!=(const range &comparand) const;
+
+
+
+    /// <summary>
+    /// by rao. set column width for this range
+    /// </summary>
+    void column_width(double width);
+    void row_height(double height);
+
+//  this.cell(xlnt::cell_reference(i, j)).value(md[i][j]));
+//  void value(const vector<vector<string> >& v);
 
 private:
     /// <summary>

@@ -770,6 +770,10 @@ public:
     /// </summary>
     bool has_drawing() const;
 
+
+    // by rao, clear content for all cells in this sheet 
+    void clear_value();
+
 private:
     friend class cell;
     friend class const_range_iterator;
