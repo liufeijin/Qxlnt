@@ -113,7 +113,15 @@ format format::fill(const xlnt::fill &new_fill, optional<bool> applied)
 
 xlnt::font format::font() const
 {
-    return d_->parent->fonts.at(d_->font_id.get());
+    if (d_->parent->fonts.empty()) {
+        return xlnt::font();
+    }
+    auto id = d_->font_id.get();
+    if (id <= d_->parent->fonts.size()) {
+        id = d_->parent->fonts.size() -1;
+    }
+    
+    return d_->parent->fonts.at(id);
 }
 
 format format::font(const xlnt::font &new_font, optional<bool> applied)
