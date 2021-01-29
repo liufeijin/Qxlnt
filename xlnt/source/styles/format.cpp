@@ -116,6 +116,9 @@ xlnt::font format::font() const
     if (d_->parent->fonts.empty()) {
         return xlnt::font();
     }
+    if (!d_->font_id.is_set()) {
+        return xlnt::font();
+    }
     auto id = d_->font_id.get();
     if (id <= d_->parent->fonts.size()) {
         id = d_->parent->fonts.size() -1;
