@@ -934,6 +934,10 @@ fill cell::fill() const
 
 font cell::font() const
 {
+    if (!d_->format_.is_set())
+    {
+        return xlnt::font();
+    }
     return format().font();
 }
 

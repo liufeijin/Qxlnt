@@ -31,6 +31,17 @@
 
 namespace xlnt {
 
+template <class Element, class Option>
+Element getElement(std::vector<Element>& c, Option op) {
+    if (c.empty()) {
+        return Element();
+    }
+    if (!op.is_set() || c.size() >= op.get()) {
+        return c[0];
+    }
+    return c.at(op.get());
+}
+
 format::format(detail::format_impl *d)
     : d_(d)
 {
@@ -80,7 +91,7 @@ const style format::style() const
 
 xlnt::alignment format::alignment() const
 {
-    return d_->parent->alignments.at(d_->alignment_id.get());
+    return getElement(d_->parent->alignments, d_->alignment_id);
 }
 
 format format::alignment(const xlnt::alignment &new_alignment, optional<bool> applied)
@@ -91,7 +102,7 @@ format format::alignment(const xlnt::alignment &new_alignment, optional<bool> ap
 
 xlnt::border format::border() const
 {
-    return d_->parent->borders.at(d_->border_id.get());
+    return getElement(d_->parent->borders, d_->border_id);
 }
 
 format format::border(const xlnt::border &new_border, optional<bool> applied)
@@ -102,7 +113,7 @@ format format::border(const xlnt::border &new_border, optional<bool> applied)
 
 xlnt::fill format::fill() const
 {
-    return d_->parent->fills.at(d_->fill_id.get());
+    return getElement(d_->parent->fills, d_->fill_id);
 }
 
 format format::fill(const xlnt::fill &new_fill, optional<bool> applied)
@@ -113,18 +124,7 @@ format format::fill(const xlnt::fill &new_fill, optional<bool> applied)
 
 xlnt::font format::font() const
 {
-    if (d_->parent->fonts.empty()) {
-        return xlnt::font();
-    }
-    if (!d_->font_id.is_set()) {
-        return xlnt::font();
-    }
-    auto id = d_->font_id.get();
-    if (id <= d_->parent->fonts.size()) {
-        id = d_->parent->fonts.size() -1;
-    }
-    
-    return d_->parent->fonts.at(id);
+    return getElement(d_->parent->fonts, d_->font_id);
 }
 
 format format::font(const xlnt::font &new_font, optional<bool> applied)
