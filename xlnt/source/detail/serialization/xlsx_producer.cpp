@@ -3329,19 +3329,20 @@ void xlsx_producer::write_relationships(const std::vector<xlnt::relationship> &r
         auto rel_iter = std::find_if(relationships.begin(), relationships.end(),
             [&i](const relationship &r) { return r.id() == "rId" + std::to_string(i); });
         auto relationship = *rel_iter;
+        if(relationship.type()!=relationship_type::unknown){ // 2022-7-16 liufeijin
+           write_start_element(xmlns, "Relationship");
 
-        write_start_element(xmlns, "Relationship");
+           write_attribute("Id", relationship.id());
+           write_attribute("Type", relationship.type());
+           write_attribute("Target", relationship.target().path().string());
 
-        write_attribute("Id", relationship.id());
-        write_attribute("Type", relationship.type());
-        write_attribute("Target", relationship.target().path().string());
+           if (relationship.target_mode() == xlnt::target_mode::external)
+           {
+               write_attribute("TargetMode", "External");
+           }
 
-        if (relationship.target_mode() == xlnt::target_mode::external)
-        {
-            write_attribute("TargetMode", "External");
+           write_end_element(xmlns, "Relationship");
         }
-
-        write_end_element(xmlns, "Relationship");
     }
 
     write_end_element(xmlns, "Relationships");
